@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Orbit",
+    "slug": "orbit-pms",
+    "scheme": "orbit",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#090e22",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#090e22"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.orbit.pms"
+    },
+    "android": {
+      "package": "com.orbit.pms",
+      "adaptiveIcon": {
+        "backgroundColor": "#090e22",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": ["expo-secure-store", "expo-font"],
+    "extra": {
+      "eas": {}
+    }
+  }
+}

@@ -1,0 +1,340 @@
+openapi: 3.0.3
+info:
+  title: Project Management System API
+  version: 1.0.0
+  description: |
+    One REST API shared by the web app and the Android app.
+
+    **Authentication:** register or log in to receive a JWT, then send it as `Authorization: Bearer <token>`.
+    Every endpoint except register and login requires it, and every resource is scoped to the authenticated user —
+    requesting another user's project or task returns `404`.
+
+    **Errors** always look like `{ "error": { "code", "message", "details?" }, "requestId" }`.
+servers:
+  - url: /
+tags:
+  - name: Auth
+  - name: Projects
+  - name: Tasks
+  - name: Dashboard
+security:
+  - bearerAuth: []
+paths:
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Create an account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201': { description: Account created and logged in, content: { application/json: { schema: { $ref: '#/components/schemas/AuthResponse' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { description: Email already registered (code EMAIL_TAKEN), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in
+      description: Failed attempts are rate limited per IP (default 10 per 15 minutes).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { description: Logged in, content: { application/json: { schema: { $ref: '#/components/schemas/AuthResponse' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { description: Incorrect email or password (code INVALID_CREDENTIALS), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Log out (revokes the current token)
+      responses:
+        '200': { description: Logged out, content: { application/json: { schema: { type: object, properties: { message: { type: string } } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Current user
+      responses:
+        '200': { description: The authenticated user, content: { application/json: { schema: { type: object, properties: { user: { $ref: '#/components/schemas/User' } } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/projects:
+    get:
+      tags: [Projects]
+      summary: List my projects
+      parameters:
+        - { name: search, in: query, schema: { type: string, maxLength: 100 }, description: Case-insensitive match on project name }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/ProjectStatus' } }
+        - { name: sortBy, in: query, schema: { type: string, enum: [createdAt, name, startDate, endDate, status], default: createdAt } }
+        - { name: order, in: query, schema: { type: string, enum: [asc, desc], default: desc } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+      responses:
+        '200': { description: Page of projects, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectList' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Projects]
+      summary: Create a project
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ProjectInput' } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { type: object, properties: { data: { $ref: '#/components/schemas/Project' } } } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/projects/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [Projects]
+      summary: Get a project
+      responses:
+        '200': { description: The project, content: { application/json: { schema: { type: object, properties: { data: { $ref: '#/components/schemas/Project' } } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Projects]
+      summary: Update a project (send any subset of fields)
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ProjectInput' } } }
+      responses:
+        '200': { description: Updated, content: { application/json: { schema: { type: object, properties: { data: { $ref: '#/components/schemas/Project' } } } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Projects]
+      summary: Delete a project and all of its tasks
+      responses:
+        '204': { description: Deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/tasks:
+    get:
+      tags: [Tasks]
+      summary: List my tasks (optionally for one project)
+      parameters:
+        - { name: projectId, in: query, schema: { type: string, format: uuid } }
+        - { name: search, in: query, schema: { type: string, maxLength: 100 }, description: Case-insensitive match on task name }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/TaskStatus' } }
+        - { name: priority, in: query, schema: { $ref: '#/components/schemas/TaskPriority' } }
+        - { name: sortBy, in: query, schema: { type: string, enum: [createdAt, dueDate, priority, name, status], default: createdAt } }
+        - { name: order, in: query, schema: { type: string, enum: [asc, desc], default: desc } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+      responses:
+        '200': { description: Page of tasks, content: { application/json: { schema: { $ref: '#/components/schemas/TaskList' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Tasks]
+      summary: Create a task in one of my projects
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/TaskCreateInput' } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { type: object, properties: { data: { $ref: '#/components/schemas/Task' } } } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/tasks/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [Tasks]
+      summary: Get a task
+      responses:
+        '200': { description: The task, content: { application/json: { schema: { type: object, properties: { data: { $ref: '#/components/schemas/Task' } } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Tasks]
+      summary: Update a task (send any subset of fields)
+      description: 'Send only the fields to change — for example the body {"status": "Completed"} marks a task as completed.'
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/TaskUpdateInput' } } }
+      responses:
+        '200': { description: Updated, content: { application/json: { schema: { type: object, properties: { data: { $ref: '#/components/schemas/Task' } } } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Tasks]
+      summary: Delete a task
+      responses:
+        '204': { description: Deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Statistics for the authenticated user
+      responses:
+        '200': { description: Dashboard numbers, content: { application/json: { schema: { type: object, properties: { data: { $ref: '#/components/schemas/Dashboard' } } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/audit-logs:
+    get:
+      tags: [Dashboard]
+      summary: My recent activity (audit log)
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+      responses:
+        '200': { description: Page of audit entries }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  responses:
+    ValidationError:
+      description: Request failed validation (code VALIDATION_ERROR; `details` lists each field)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Unauthorized:
+      description: Missing, invalid, revoked or expired token (code UNAUTHORIZED, INVALID_TOKEN or TOKEN_EXPIRED)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    NotFound:
+      description: Resource does not exist or belongs to another user
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    RateLimited:
+      description: Too many requests (code RATE_LIMITED); see the Retry-After header
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string, example: VALIDATION_ERROR }
+            message: { type: string }
+            details:
+              type: array
+              items:
+                type: object
+                properties: { location: { type: string }, field: { type: string }, message: { type: string } }
+        requestId: { type: string }
+    ProjectStatus: { type: string, enum: [Not Started, In Progress, Completed] }
+    TaskStatus: { type: string, enum: [Pending, In Progress, Completed] }
+    TaskPriority: { type: string, enum: [Low, Medium, High] }
+    RegisterRequest:
+      type: object
+      required: [fullName, email, password]
+      properties:
+        fullName: { type: string, minLength: 2, maxLength: 100, example: Ada Lovelace }
+        email: { type: string, format: email, example: ada@example.com }
+        password: { type: string, minLength: 8, maxLength: 72, description: At least one letter and one number, example: Passw0rd123 }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        fullName: { type: string }
+        email: { type: string, format: email }
+        createdAt: { type: string, format: date-time }
+    AuthResponse:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        token: { type: string, description: JWT (HS256) }
+        expiresAt: { type: string, format: date-time }
+    Project:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string }
+        status: { $ref: '#/components/schemas/ProjectStatus' }
+        startDate: { type: string, format: date, nullable: true }
+        endDate: { type: string, format: date, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        taskCount: { type: integer }
+        completedTaskCount: { type: integer }
+        progress: { type: integer, description: Percentage of tasks completed (0-100) }
+    ProjectInput:
+      type: object
+      properties:
+        name: { type: string, maxLength: 120 }
+        description: { type: string, maxLength: 5000 }
+        status: { $ref: '#/components/schemas/ProjectStatus' }
+        startDate: { type: string, format: date, nullable: true }
+        endDate: { type: string, format: date, nullable: true, description: Must not be before startDate }
+      description: '`name` is required when creating; on update every field is optional but at least one is required.'
+    Task:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        projectId: { type: string, format: uuid }
+        projectName: { type: string }
+        name: { type: string }
+        description: { type: string }
+        priority: { $ref: '#/components/schemas/TaskPriority' }
+        status: { $ref: '#/components/schemas/TaskStatus' }
+        dueDate: { type: string, format: date, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    TaskCreateInput:
+      type: object
+      required: [projectId, name]
+      properties:
+        projectId: { type: string, format: uuid }
+        name: { type: string, maxLength: 160 }
+        description: { type: string, maxLength: 5000 }
+        priority: { $ref: '#/components/schemas/TaskPriority' }
+        status: { $ref: '#/components/schemas/TaskStatus' }
+        dueDate: { type: string, format: date, nullable: true }
+    TaskUpdateInput:
+      type: object
+      properties:
+        name: { type: string, maxLength: 160 }
+        description: { type: string, maxLength: 5000 }
+        priority: { $ref: '#/components/schemas/TaskPriority' }
+        status: { $ref: '#/components/schemas/TaskStatus' }
+        dueDate: { type: string, format: date, nullable: true }
+    Pagination:
+      type: object
+      properties:
+        page: { type: integer }
+        limit: { type: integer }
+        total: { type: integer }
+        totalPages: { type: integer }
+    ProjectList:
+      type: object
+      properties:
+        data: { type: array, items: { $ref: '#/components/schemas/Project' } }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+    TaskList:
+      type: object
+      properties:
+        data: { type: array, items: { $ref: '#/components/schemas/Task' } }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+    Dashboard:
+      type: object
+      properties:
+        totalProjects: { type: integer }
+        totalTasks: { type: integer }
+        completedTasks: { type: integer }
+        pendingTasks: { type: integer, description: Tasks with status Pending }
+        projectsInProgress: { type: integer }
+        inProgressTasks: { type: integer }
+        overdueTasks: { type: integer }
+        completionRate: { type: integer }
+        projectsByStatus: { type: object, additionalProperties: { type: integer } }
+        openTasksByPriority: { type: object, additionalProperties: { type: integer } }
+        upcomingTasks: { type: array, items: { $ref: '#/components/schemas/Task' } }
+        recentTasks: { type: array, items: { $ref: '#/components/schemas/Task' } }

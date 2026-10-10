@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 700" font-family="Helvetica,Arial,sans-serif" font-size="13">
+<rect width="1100" height="700" fill="#0b1026"/>
+<text x="40" y="26" fill="#eef1ff" font-size="16" font-weight="bold">Project Management System - entity relationship diagram</text>
+<rect x="40" y="60" width="300" height="190" rx="10" fill="#141c42" stroke="#3a4690"/>
+<path d="M40 94 V70 a10 10 0 0 1 10 -10 H330 a10 10 0 0 1 10 10 V94 Z" fill="#6a5af5"/>
+<text x="54" y="83" fill="#fff" font-weight="bold" font-size="15">users</text>
+<text x="54" y="112" fill="#ffc15a">id</text>
+<text x="326" y="112" fill="#9aa5d6" text-anchor="end">uuid  PK</text>
+<text x="54" y="138" fill="#eef1ff">full_name</text>
+<text x="326" y="138" fill="#9aa5d6" text-anchor="end">varchar(100)</text>
+<text x="54" y="164" fill="#34e0b5">email</text>
+<text x="326" y="164" fill="#9aa5d6" text-anchor="end">varchar(254)  UQ</text>
+<text x="54" y="190" fill="#eef1ff">password_hash</text>
+<text x="326" y="190" fill="#9aa5d6" text-anchor="end">text</text>
+<text x="54" y="216" fill="#eef1ff">created_at</text>
+<text x="326" y="216" fill="#9aa5d6" text-anchor="end">timestamptz</text>
+<text x="54" y="242" fill="#eef1ff">updated_at</text>
+<text x="326" y="242" fill="#9aa5d6" text-anchor="end">timestamptz</text>
+<rect x="400" y="60" width="300" height="268" rx="10" fill="#141c42" stroke="#3a4690"/>
+<path d="M400 94 V70 a10 10 0 0 1 10 -10 H690 a10 10 0 0 1 10 10 V94 Z" fill="#6a5af5"/>
+<text x="414" y="83" fill="#fff" font-weight="bold" font-size="15">projects</text>
+<text x="414" y="112" fill="#ffc15a">id</text>
+<text x="686" y="112" fill="#9aa5d6" text-anchor="end">uuid  PK</text>
+<text x="414" y="138" fill="#5cc8ff">user_id</text>
+<text x="686" y="138" fill="#9aa5d6" text-anchor="end">uuid  FK</text>
+<text x="414" y="164" fill="#eef1ff">name</text>
+<text x="686" y="164" fill="#9aa5d6" text-anchor="end">varchar(120)</text>
+<text x="414" y="190" fill="#eef1ff">description</text>
+<text x="686" y="190" fill="#9aa5d6" text-anchor="end">text</text>
+<text x="414" y="216" fill="#eef1ff">status</text>
+<text x="686" y="216" fill="#9aa5d6" text-anchor="end">varchar(20)</text>
+<text x="414" y="242" fill="#eef1ff">start_date</text>
+<text x="686" y="242" fill="#9aa5d6" text-anchor="end">date</text>
+<text x="414" y="268" fill="#eef1ff">end_date</text>
+<text x="686" y="268" fill="#9aa5d6" text-anchor="end">date</text>
+<text x="414" y="294" fill="#eef1ff">created_at</text>
+<text x="686" y="294" fill="#9aa5d6" text-anchor="end">timestamptz</text>
+<text x="414" y="320" fill="#eef1ff">updated_at</text>
+<text x="686" y="320" fill="#9aa5d6" text-anchor="end">timestamptz</text>
+<rect x="760" y="60" width="300" height="268" rx="10" fill="#141c42" stroke="#3a4690"/>
+<path d="M760 94 V70 a10 10 0 0 1 10 -10 H1050 a10 10 0 0 1 10 10 V94 Z" fill="#6a5af5"/>
+<text x="774" y="83" fill="#fff" font-weight="bold" font-size="15">tasks</text>
+<text x="774" y="112" fill="#ffc15a">id</text>
+<text x="1046" y="112" fill="#9aa5d6" text-anchor="end">uuid  PK</text>
+<text x="774" y="138" fill="#5cc8ff">project_id</text>
+<text x="1046" y="138" fill="#9aa5d6" text-anchor="end">uuid  FK</text>
+<text x="774" y="164" fill="#eef1ff">name</text>
+<text x="1046" y="164" fill="#9aa5d6" text-anchor="end">varchar(160)</text>
+<text x="774" y="190" fill="#eef1ff">description</text>
+<text x="1046" y="190" fill="#9aa5d6" text-anchor="end">text</text>
+<text x="774" y="216" fill="#eef1ff">priority</text>
+<text x="1046" y="216" fill="#9aa5d6" text-anchor="end">varchar(10)</text>
+<text x="774" y="242" fill="#eef1ff">status</text>
+<text x="1046" y="242" fill="#9aa5d6" text-anchor="end">varchar(20)</text>
+<text x="774" y="268" fill="#eef1ff">due_date</text>
+<text x="1046" y="268" fill="#9aa5d6" text-anchor="end">date</text>
+<text x="774" y="294" fill="#eef1ff">created_at</text>
+<text x="1046" y="294" fill="#9aa5d6" text-anchor="end">timestamptz</text>
+<text x="774" y="320" fill="#eef1ff">updated_at</text>
+<text x="1046" y="320" fill="#9aa5d6" text-anchor="end">timestamptz</text>
+<rect x="40" y="350" width="300" height="138" rx="10" fill="#141c42" stroke="#3a4690"/>
+<path d="M40 384 V360 a10 10 0 0 1 10 -10 H330 a10 10 0 0 1 10 10 V384 Z" fill="#6a5af5"/>
+<text x="54" y="373" fill="#fff" font-weight="bold" font-size="15">revoked_tokens</text>
+<text x="54" y="402" fill="#ffc15a">jti</text>
+<text x="326" y="402" fill="#9aa5d6" text-anchor="end">uuid  PK</text>
+<text x="54" y="428" fill="#5cc8ff">user_id</text>
+<text x="326" y="428" fill="#9aa5d6" text-anchor="end">uuid  FK</text>
+<text x="54" y="454" fill="#eef1ff">expires_at</text>
+<text x="326" y="454" fill="#9aa5d6" text-anchor="end">timestamptz</text>
+<text x="54" y="480" fill="#eef1ff">revoked_at</text>
+<text x="326" y="480" fill="#9aa5d6" text-anchor="end">timestamptz</text>
+<rect x="400" y="420" width="300" height="242" rx="10" fill="#141c42" stroke="#3a4690"/>
+<path d="M400 454 V430 a10 10 0 0 1 10 -10 H690 a10 10 0 0 1 10 10 V454 Z" fill="#6a5af5"/>
+<text x="414" y="443" fill="#fff" font-weight="bold" font-size="15">audit_logs</text>
+<text x="414" y="472" fill="#ffc15a">id</text>
+<text x="686" y="472" fill="#9aa5d6" text-anchor="end">bigserial  PK</text>
+<text x="414" y="498" fill="#5cc8ff">user_id</text>
+<text x="686" y="498" fill="#9aa5d6" text-anchor="end">uuid  FK</text>
+<text x="414" y="524" fill="#eef1ff">action</text>
+<text x="686" y="524" fill="#9aa5d6" text-anchor="end">varchar(40)</text>
+<text x="414" y="550" fill="#eef1ff">entity_type</text>
+<text x="686" y="550" fill="#9aa5d6" text-anchor="end">varchar(20)</text>
+<text x="414" y="576" fill="#eef1ff">entity_id</text>
+<text x="686" y="576" fill="#9aa5d6" text-anchor="end">uuid</text>
+<text x="414" y="602" fill="#eef1ff">metadata</text>
+<text x="686" y="602" fill="#9aa5d6" text-anchor="end">jsonb</text>
+<text x="414" y="628" fill="#eef1ff">ip_address</text>
+<text x="686" y="628" fill="#9aa5d6" text-anchor="end">varchar(64)</text>
+<text x="414" y="654" fill="#eef1ff">created_at</text>
+<text x="686" y="654" fill="#9aa5d6" text-anchor="end">timestamptz</text>
+<path d="M340 107 C380 107 360 133 400 133" fill="none" stroke="#8b7dff" stroke-width="2"/>
+<text x="370.0" y="99" fill="#a3aedb" text-anchor="middle" font-size="12">owns</text>
+<text x="348" y="101" fill="#34e0b5" font-size="12">1</text><text x="386" y="127" fill="#34e0b5" font-size="12">N</text>
+<path d="M700 107 C740 107 720 133 760 133" fill="none" stroke="#8b7dff" stroke-width="2"/>
+<text x="730.0" y="99" fill="#a3aedb" text-anchor="middle" font-size="12">contains</text>
+<text x="708" y="101" fill="#34e0b5" font-size="12">1</text><text x="746" y="127" fill="#34e0b5" font-size="12">N</text>
+<path d="M190 250 V350" fill="none" stroke="#8b7dff" stroke-width="2"/><text x="198" y="320" fill="#a3aedb" font-size="12">1 - N logs out</text>
+<path d="M340 225 H370 V485 H400" fill="none" stroke="#8b7dff" stroke-width="2" stroke-dasharray="5 4"/><text x="364" y="540" fill="#a3aedb" font-size="12" transform="rotate(-90 364 540)">1 - N performs (SET NULL)</text>
+<text x="40" y="680" fill="#7480b0" font-size="12">PK primary key   FK foreign key (ON DELETE CASCADE unless noted)   UQ unique (lower(email))</text>
+</svg>
