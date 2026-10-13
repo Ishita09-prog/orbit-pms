@@ -4,11 +4,11 @@
     "preview": {
       "distribution": "internal",
       "android": { "buildType": "apk" },
-      "env": { "EXPO_PUBLIC_API_URL": "https://YOUR-API.onrender.com" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://pms-api-mp2a.onrender.com" }
     },
     "production": {
       "android": { "buildType": "app-bundle" },
-      "env": { "EXPO_PUBLIC_API_URL": "https://YOUR-API.onrender.com" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://pms-api-mp2a.onrender.com" }
     }
   }
 }
